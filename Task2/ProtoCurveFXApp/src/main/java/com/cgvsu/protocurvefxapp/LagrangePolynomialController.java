@@ -7,6 +7,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
+import javafx.util.Pair;
 
 import java.util.ArrayList;
 
@@ -17,7 +18,8 @@ public class LagrangePolynomialController {
     @FXML
     private Canvas canvas;
 
-    ArrayList<MutablePoint2D> points = new ArrayList<MutablePoint2D>();
+    ArrayList<Pair<MutablePoint2D, MutablePoint2D>> points = new ArrayList<Pair<MutablePoint2D, MutablePoint2D>>();
+
     private final int POINT_RADIUS = 3;
     private MutablePoint2D selectedPoint;
     private boolean isDragged = false;
@@ -51,7 +53,7 @@ public class LagrangePolynomialController {
 
     private void handleMiddleClick(GraphicsContext graphicsContext, MouseEvent event) {
         graphicsContext.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        points = new ArrayList<MutablePoint2D>();
+        points = new ArrayList<Pair<MutablePoint2D, MutablePoint2D>>();
     }
 
     private void handlePrimaryClick(GraphicsContext graphicsContext, MouseEvent event) {
@@ -60,7 +62,7 @@ public class LagrangePolynomialController {
             selectedPoint = selectedPoint(clickPoint);
         } else if (event.getEventType() == MouseEvent.MOUSE_RELEASED) {
             if (selectedPoint == null && !isDragged) {
-                points.add(clickPoint);
+                points.add(getPointPair(clickPoint));
             } else {
                 selectedPoint = null;
             }
@@ -77,14 +79,25 @@ public class LagrangePolynomialController {
 //            selectedPoint
 //        }
         graphicsContext.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        for (MutablePoint2D point : points) {
+        for (Pair<MutablePoint2D, MutablePoint2D> pair : points) {
+            MutablePoint2D point = getPointFromPair(pair);
             graphicsContext.fillOval(
                     point.getX() - POINT_RADIUS, point.getY() - POINT_RADIUS,
                     2 * POINT_RADIUS, 2 * POINT_RADIUS);
         }
-        if (points.size() > 0) {
+        if (points.size() > 1) {
             drawLagrange(graphicsContext);
-            //graphicsContext.strokeLine(lastPoint.getX(), lastPoint.getY(), clickPoint.getX(), clickPoint.getY());
+        }
+    }
+
+    private Pair<MutablePoint2D, MutablePoint2D> getPointPair(MutablePoint2D clickPoint) {
+        if (points.size() == 0) {
+            return new Pair<>(new MutablePoint2D(0, clickPoint.getX()), new MutablePoint2D(0, clickPoint.getY()));
+        } else {
+            Pair<MutablePoint2D, MutablePoint2D> lastPair = points.get(points.size() - 1);
+            double lastT = lastPair.getKey().getX();
+            double newT = lastT + clickPoint.distance(getPointFromPair(lastPair));
+            return new Pair<>(new MutablePoint2D(newT, clickPoint.getX()), new MutablePoint2D(newT, clickPoint.getY()));
         }
     }
 
@@ -94,45 +107,53 @@ public class LagrangePolynomialController {
         }
     }
 
-    private void drawCurve(MutablePoint2D p1, MutablePoint2D p2, GraphicsContext graphicsContext) {
-        double startX = Math.min(p1.getX(), p2.getX());
-        double endX = Math.max(p1.getX(), p2.getX());
-        double curX = startX;
-        MutablePoint2D curPoint = (startX == p1.getX()) ? p1 : p2;
-        while (curX < endX) {
-            curX += 1;
-            if (curX > endX) {
-                curX = endX;
+    private void drawCurve(Pair<MutablePoint2D, MutablePoint2D> p1, Pair<MutablePoint2D, MutablePoint2D> p2, GraphicsContext graphicsContext) {
+        double endX = p2.getKey().getX();
+        double curT = p1.getKey().getX();
+        MutablePoint2D curPoint = getPointFromPair(p1);
+        while (curT < endX) {
+            curT += 1;
+            if (curT > endX) {
+                curT = endX;
             }
-            MutablePoint2D newPoint = solvePolynomial(curX);
+            MutablePoint2D newPoint = solvePolynomial(curT);
             graphicsContext.strokeLine(curPoint.getX(), curPoint.getY(), newPoint.getX(), newPoint.getY());
             curPoint = newPoint;
         }
     }
 
-    private MutablePoint2D solvePolynomial(double x) {
+    private MutablePoint2D solvePolynomial(double t) {
         int i = 0;
-        double result = 0;
-        for (MutablePoint2D pointI: points) {
-            double product = 1;
+        double resultX = 0;
+        double resultY = 0;
+        for (Pair<MutablePoint2D, MutablePoint2D> pairI: points) {
+            double productX = 1;
+            double productY = 1;
             int j = 0;
-            for (MutablePoint2D pointJ: points) {
+            for (Pair<MutablePoint2D, MutablePoint2D> pairJ: points) {
                 if (i != j) {
-                    product *= (x - pointJ.getX()) / (pointI.getX() - pointJ.getX());
+                    productX *= (t - pairJ.getKey().getX()) / (pairI.getKey().getX() - pairJ.getKey().getX());
+                    productY *= (t - pairJ.getValue().getX()) / (pairI.getValue().getX() - pairJ.getValue().getX());
                 }
                 j++;
             }
-            result += product * pointI.getY();
+            resultX += productX * pairI.getKey().getY();
+            resultY += productY * pairI.getValue().getY();
             i++;
         }
-        return new MutablePoint2D(x, result);
+        return new MutablePoint2D(resultX, resultY);
     }
     private MutablePoint2D selectedPoint(MutablePoint2D clickPoint) {
-        for (MutablePoint2D point: points) {
-            if (clickPoint.distance(point) <= POINT_RADIUS) {
-                return point;
-            }
-        }
+//        for (MutablePoint2D point: points) {
+//            if (clickPoint.distance(point) <= POINT_RADIUS) {
+//                return point;
+//            }
+//        }
         return null;
+    }
+    private MutablePoint2D getPointFromPair(Pair<MutablePoint2D, MutablePoint2D> pair) {
+        double x = pair.getKey().getY();
+        double y = pair.getValue().getY();
+        return new MutablePoint2D(x, y);
     }
 }
