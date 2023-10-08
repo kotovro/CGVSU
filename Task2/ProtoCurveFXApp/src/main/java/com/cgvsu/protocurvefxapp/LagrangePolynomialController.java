@@ -9,7 +9,7 @@ import javafx.scene.layout.AnchorPane;
 
 import java.util.ArrayList;
 
-public class ProtoCurveController {
+public class LagrangePolynomialController {
 
     @FXML
     AnchorPane anchorPane;
