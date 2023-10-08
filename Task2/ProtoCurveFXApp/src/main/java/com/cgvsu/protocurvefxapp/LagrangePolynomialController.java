@@ -6,7 +6,6 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.paint.Color;
 import javafx.util.Pair;
 
 import java.util.ArrayList;
@@ -21,7 +20,7 @@ public class LagrangePolynomialController {
     ArrayList<Pair<MutablePoint2D, MutablePoint2D>> points = new ArrayList<Pair<MutablePoint2D, MutablePoint2D>>();
 
     private final int POINT_RADIUS = 3;
-    private MutablePoint2D selectedPoint;
+    private Pair<MutablePoint2D, MutablePoint2D> selectedPair;
     private boolean isDragged = false;
 
     @FXML
@@ -59,25 +58,21 @@ public class LagrangePolynomialController {
     private void handlePrimaryClick(GraphicsContext graphicsContext, MouseEvent event) {
         final MutablePoint2D clickPoint = new MutablePoint2D(event.getX(), event.getY());
         if (event.getEventType() == MouseEvent.MOUSE_PRESSED) {
-            selectedPoint = selectedPoint(clickPoint);
+            selectedPair = selectedPair(clickPoint);
         } else if (event.getEventType() == MouseEvent.MOUSE_RELEASED) {
-            if (selectedPoint == null && !isDragged) {
+            if (selectedPair == null && !isDragged) {
                 points.add(getPointPair(clickPoint));
             } else {
-                selectedPoint = null;
+                selectedPair = null;
             }
             isDragged = false;
         } else if (event.getEventType() == MouseEvent.MOUSE_DRAGGED){
             isDragged = true;
-            if (selectedPoint != null) {
-                selectedPoint.setX(event.getX());
-                selectedPoint.setY(event.getY());
+            if (selectedPair != null) {
+                selectedPair.getKey().setY(event.getX());
+                selectedPair.getValue().setY(event.getY());
             }
         }
-
-//        } else {
-//            selectedPoint
-//        }
         graphicsContext.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
         for (Pair<MutablePoint2D, MutablePoint2D> pair : points) {
             MutablePoint2D point = getPointFromPair(pair);
@@ -143,12 +138,12 @@ public class LagrangePolynomialController {
         }
         return new MutablePoint2D(resultX, resultY);
     }
-    private MutablePoint2D selectedPoint(MutablePoint2D clickPoint) {
-//        for (MutablePoint2D point: points) {
-//            if (clickPoint.distance(point) <= POINT_RADIUS) {
-//                return point;
-//            }
-//        }
+    private Pair<MutablePoint2D, MutablePoint2D> selectedPair(MutablePoint2D clickPoint) {
+        for (Pair<MutablePoint2D, MutablePoint2D> pair: points) {
+            if (clickPoint.distance(getPointFromPair(pair)) <= POINT_RADIUS) {
+                return pair;
+            }
+        }
         return null;
     }
     private MutablePoint2D getPointFromPair(Pair<MutablePoint2D, MutablePoint2D> pair) {
