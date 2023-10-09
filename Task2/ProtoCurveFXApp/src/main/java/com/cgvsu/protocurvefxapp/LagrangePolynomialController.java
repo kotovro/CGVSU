@@ -5,7 +5,6 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
-import javafx.util.Pair;
 
 import java.util.ArrayList;
 
@@ -16,7 +15,7 @@ public class LagrangePolynomialController {
     @FXML
     private Canvas canvas;
 
-    ArrayList<ParametrizedPoint> points = new ArrayList<ParametrizedPoint>();
+    ArrayList<ParametrizedPoint> points = new ArrayList<>();
 
     private final int POINT_RADIUS = 3;
     private ParametrizedPoint selectedPair;
@@ -60,27 +59,27 @@ public class LagrangePolynomialController {
 
     private void handleMiddleClick(GraphicsContext graphicsContext, MouseEvent event) {
         graphicsContext.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        points = new ArrayList<ParametrizedPoint>();
+        points = new ArrayList<>();
     }
 
     private void handlePrimaryClick(GraphicsContext graphicsContext, MouseEvent event) {
         final MutablePoint2D clickPoint = new MutablePoint2D(event.getX(), event.getY());
         if (event.getEventType() == MouseEvent.MOUSE_PRESSED) {
             selectedPair = selectedPair(clickPoint);
-        } else if (event.getEventType() == MouseEvent.MOUSE_RELEASED) {
-            if (selectedPair == null && !isDragged) {
-                points.add(getPointPair(clickPoint));
-            } else {
-                selectedPair = null;
-            }
-            isDragged = false;
-        } else if (event.getEventType() == MouseEvent.MOUSE_DRAGGED){
+        }  else if (event.getEventType() == MouseEvent.MOUSE_DRAGGED){
             isDragged = true;
             if (selectedPair != null) {
                 selectedPair.getValue().setX(event.getX());
                 selectedPair.getValue().setY(event.getY());
                 recalcDistances();
             }
+        } else if (event.getEventType() == MouseEvent.MOUSE_RELEASED) {
+            if (selectedPair == null && !isDragged) {
+                points.add(getPointPair(clickPoint));
+            }
+
+            selectedPair = null;
+            isDragged = false;
         }
         drawPolynomialCurve(graphicsContext);
     }
