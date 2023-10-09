@@ -1,7 +1,6 @@
 package com.cgvsu.protocurvefxapp;
 
 import javafx.fxml.FXML;
-//import javafx.geometry.MutablePoint2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseEvent;
@@ -31,6 +30,7 @@ public class LagrangePolynomialController {
         canvas.setOnMouseClicked(event -> {
             switch (event.getButton()) {
                 case MIDDLE -> handleMiddleClick(canvas.getGraphicsContext2D(), event);
+                case SECONDARY ->  handleSecondaryClick(canvas.getGraphicsContext2D(), event);
             }
         });
         canvas.setOnMousePressed(event -> {
@@ -48,6 +48,29 @@ public class LagrangePolynomialController {
                 case PRIMARY -> handlePrimaryClick(canvas.getGraphicsContext2D(), event);
             }
         });
+    }
+
+    private void handleSecondaryClick(GraphicsContext graphicsContext, MouseEvent event) {
+        final MutablePoint2D clickPoint = new MutablePoint2D(event.getX(), event.getY());
+        Pair<Double, MutablePoint2D> selectedPair = selectedPair(clickPoint);
+        double delta = 0;
+        if (selectedPair != null) {
+            ArrayList<Pair<Double, MutablePoint2D>> newPoints = new ArrayList<>();
+            int i = 0;
+            for (Pair<Double, MutablePoint2D> pair: points) {
+                if (pair != selectedPair) {
+                    double newT = pair.getKey() - delta;
+                    newPoints.add(new Pair<>(newT, pair.getValue()));
+                } else {
+                    if (i < points.size() - 1) {
+                        delta = points.get(i + 1).getKey() - selectedPair.getKey();
+                    }
+                }
+                i++;
+            }
+            points = newPoints;
+            drawPolynomialCurve(graphicsContext);
+        }
     }
 
     private void handleMiddleClick(GraphicsContext graphicsContext, MouseEvent event) {

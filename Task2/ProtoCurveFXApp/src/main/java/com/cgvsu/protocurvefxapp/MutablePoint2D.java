@@ -28,4 +28,13 @@ public class MutablePoint2D {
     public double distance(MutablePoint2D point) {
         return Math.sqrt(Math.pow(x - point.getX(), 2) + Math.pow(y - point.getY(), 2));
     }
+    public boolean equals( Object obj ) {
+        if (obj instanceof MutablePoint2D) {
+            MutablePoint2D point = (MutablePoint2D) obj;
+            return point.getX() == x && point.getY() == y;
+        } else {
+            return false;
+        }
+    }
+
 }
