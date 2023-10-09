@@ -18,7 +18,7 @@ public class LagrangePolynomialController {
     ArrayList<ParametrizedPoint> points = new ArrayList<>();
 
     private final int POINT_RADIUS = 3;
-    private ParametrizedPoint selectedPair;
+    private ParametrizedPoint selectedPoint;
     private boolean isDragged = false;
 
     @FXML
@@ -65,20 +65,20 @@ public class LagrangePolynomialController {
     private void handlePrimaryClick(GraphicsContext graphicsContext, MouseEvent event) {
         final MutablePoint2D clickPoint = new MutablePoint2D(event.getX(), event.getY());
         if (event.getEventType() == MouseEvent.MOUSE_PRESSED) {
-            selectedPair = selectedPair(clickPoint);
+            selectedPoint = selectedPair(clickPoint);
         }  else if (event.getEventType() == MouseEvent.MOUSE_DRAGGED){
             isDragged = true;
-            if (selectedPair != null) {
-                selectedPair.getValue().setX(event.getX());
-                selectedPair.getValue().setY(event.getY());
+            if (selectedPoint != null) {
+                selectedPoint.getValue().setX(event.getX());
+                selectedPoint.getValue().setY(event.getY());
                 recalcDistances();
             }
         } else if (event.getEventType() == MouseEvent.MOUSE_RELEASED) {
-            if (selectedPair == null && !isDragged) {
+            if (selectedPoint == null && !isDragged) {
                 points.add(getPointPair(clickPoint));
             }
 
-            selectedPair = null;
+            selectedPoint = null;
             isDragged = false;
         }
         drawPolynomialCurve(graphicsContext);
@@ -109,15 +109,9 @@ public class LagrangePolynomialController {
     }
 
     private void drawLagrange(GraphicsContext graphicsContext) {
-        for (int i = 0; i < points.size() - 1; i++) {
-            drawCurve(points.get(i), points.get(i + 1), graphicsContext);
-        }
-    }
-
-    private void drawCurve(ParametrizedPoint p1, ParametrizedPoint p2, GraphicsContext graphicsContext) {
-        double endT = p2.getKey();
-        double curT = p1.getKey();
-        MutablePoint2D curPoint = p1.getValue();
+        double endT = points.get(points.size() -1).getKey();
+        double curT = points.get(0).getKey();
+        MutablePoint2D curPoint = points.get(0).getValue();
         while (curT < endT) {
             curT += 1;
             if (curT > endT) {
