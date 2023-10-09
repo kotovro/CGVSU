@@ -171,4 +171,12 @@ public class LagrangePolynomialController {
         }
         return null;
     }
+    private void recalcDistances() {
+        double curDistance = 0;
+        for (int i = 1; i < points.size(); i++) {
+            curDistance += points.get(i - 1).getValue().distance(points.get(i).getValue());
+            Double temp = points.get(i).getKey();
+            temp
+        }
+    }
 }
