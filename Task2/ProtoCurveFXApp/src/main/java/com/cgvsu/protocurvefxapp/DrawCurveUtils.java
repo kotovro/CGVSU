@@ -21,47 +21,59 @@ public class DrawCurveUtils {
                 curT = endT;
             }
             MutablePoint2D newPoint = solvePolynomial(curT, points);
-            lineBresenham(graphicsContext, curPoint.getX(), curPoint.getY(), newPoint.getX(), newPoint.getY());
+            lineBresenham(graphicsContext, (int) curPoint.getX(), (int) curPoint.getY(), (int) newPoint.getX(), (int) newPoint.getY());
             //graphicsContext.strokeLine(curPoint.getX(), curPoint.getY(), newPoint.getX(), newPoint.getY());
             curPoint = newPoint;
         }
     }
-    private static void lineBresenham(GraphicsContext graphicsContext, double x0, double y0, double x1, double y1) {
-        if (x0 < x1) {
-            lineBresenhamBase(graphicsContext, x0, y0, x1, y1);
-        } else {
-            lineBresenhamBase(graphicsContext, x1, y0, x0, y1);
-        }
-    }
-    private static void lineBresenhamBase(GraphicsContext graphicsContext, double x0, double y0, double x1, double y1) {
+    private static void lineBresenham(GraphicsContext graphicsContext, int x0, int y0, int x1, int y1) {
         PixelWriter pixelWriter = graphicsContext.getPixelWriter();
-        int deltax = (int) (x1 - x0);
-        int deltay = (int) (y1 - y0);
-        int error = 0;
-        if (deltax > deltay) {
-            int deltaerr = (deltay + 1);
-            int y = (int) y0;
-            int diry = y1 > y0 ? 1 : -1;
-            for (int x = (int) x0; x < x1; x++) {
-                pixelWriter.setColor(x, y, Color.BLACK);
-                error = error + deltaerr;
-                if (error >= (deltax + 1)) {
-                    y = y + diry;
-                    error = error - (deltax + 1);
-                }
+
+        int deltaX = x1 - x0;
+        int deltaY = y1 - y0;
+
+        //определяем напрвление движения по оси
+        //если delta положительна, то двигаемся вправо,
+        //если отрицательная - влево
+        //если 0 - стоим на месте
+        int directionX = Integer.compare(deltaX, 0);
+        int directionY = Integer.compare(deltaY, 0);
+
+        deltaX = Math.abs(deltaX);
+        deltaY = Math.abs(deltaY);
+
+        int shiftX = directionX;	int shiftY = 0;
+        int shortShiftCount = deltaY;	int longShiftCount = deltaX;
+
+        if (deltaX < deltaY)
+        //случай, когда прямая скорее "высокая", чем длинная, т.е. вытянута по оси y
+        {
+            shiftX = 0;	shiftY = directionY;
+            shortShiftCount = deltaX;	longShiftCount = deltaY;//тогда в цикле будем двигаться по y
+        }
+
+        int x = x0;
+        int y = y0;
+        int err = longShiftCount/2;
+        pixelWriter.setColor(x, y, Color.BLACK);//ставим первую точку
+        //все последующие точки возможно надо сдвигать, поэтому первую ставим вне цикла
+
+        for (int t = 0; t < longShiftCount; t++)//идём по всем точкам, начиная со второй и до последней
+        {
+            err -= shortShiftCount;
+            if (err < 0)
+            {
+                err += longShiftCount;
+                x += directionX;//сдвинуть прямую (сместить вверх или вниз, если цикл проходит по иксам)
+                y += directionY;//или сместить влево-вправо, если цикл проходит по y
             }
-        } else {
-            int deltaerr = (deltax + 1);
-            int x = (int) x0;
-            int dirx = x1 > x0 ? 1 : -1;
-            for (int y = (int) y0; y < y1; y++) {
-                pixelWriter.setColor(x, y, Color.BLACK);
-                error = error + deltaerr;
-                if (error >= (deltay + 1)) {
-                    y = y + dirx;
-                    error = error - (deltay + 1);
-                }
+            else
+            {
+                x += shiftX;//продолжить тянуть прямую дальше, т.е. сдвинуть влево или вправо, если
+                y += shiftY;//цикл идёт по иксу; сдвинуть вверх или вниз, если по y
             }
+
+            pixelWriter.setColor(x, y, Color.BLACK);
         }
     }
 
