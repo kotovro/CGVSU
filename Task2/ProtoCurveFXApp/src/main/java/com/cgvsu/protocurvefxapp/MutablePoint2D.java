@@ -26,7 +26,8 @@ public class MutablePoint2D {
     }
 
     public double distance(MutablePoint2D point) {
-        return Math.sqrt(Math.pow(x - point.getX(), 2) + Math.pow(y - point.getY(), 2));
+        double distance = Math.sqrt(Math.pow(x - point.getX(), 2) + Math.pow(y - point.getY(), 2));
+        return distance != 0 ? distance : 0.1;
     }
     public boolean equals( Object obj ) {
         if (obj instanceof MutablePoint2D) {

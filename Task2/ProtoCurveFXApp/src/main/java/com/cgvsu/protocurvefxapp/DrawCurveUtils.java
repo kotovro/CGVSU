@@ -78,8 +78,11 @@ public class DrawCurveUtils {
     }
 
     public static void drawPolynomialCurve(GraphicsContext graphicsContext, ArrayList<ParametrizedPoint> points, Canvas canvas, int pointRadius) {
+        int i = 0;
         graphicsContext.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
         for (ParametrizedPoint point : points) {
+            System.out.println("Draw point " + i);
+            i++;
             MutablePoint2D point2D = point.getValue();
             graphicsContext.fillOval(
                     point2D.getX() - pointRadius, point2D.getY() - pointRadius,

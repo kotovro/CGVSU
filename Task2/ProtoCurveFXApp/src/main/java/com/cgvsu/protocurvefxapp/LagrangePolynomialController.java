@@ -60,29 +60,43 @@ public class LagrangePolynomialController {
     private void handleMiddleClick(GraphicsContext graphicsContext, MouseEvent event) {
         graphicsContext.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
         points = new ArrayList<>();
+        System.out.println("CLEAR");
     }
 
     private void handlePrimaryClick(GraphicsContext graphicsContext, MouseEvent event) {
         final MutablePoint2D clickPoint = new MutablePoint2D(event.getX(), event.getY());
         if (event.getEventType() == MouseEvent.MOUSE_PRESSED) {
             selectedPoint = selectedPair(clickPoint);
+            System.out.println(selectedPoint == null ? "Selected point not found" : "Found selected point");
 
         }  else if (event.getEventType() == MouseEvent.MOUSE_DRAGGED){
-            isDragged = true;
+
             if (selectedPoint != null) {
+                isDragged = true;
+                System.out.println("Start drag");
                 selectedPoint.getValue().setX(event.getX());
                 selectedPoint.getValue().setY(event.getY());
                 recalcDistances();
+                System.out.println("Drag point");
+                System.out.println("Draw drag curve");
+                DrawCurveUtils.drawPolynomialCurve(graphicsContext, points, canvas, POINT_RADIUS);
             }
         } else if (event.getEventType() == MouseEvent.MOUSE_RELEASED) {
             if (selectedPoint == null && !isDragged) {
                 points.add(getPointPair(clickPoint));
+                System.out.println("New point added");
+            } else {
+                System.out.println(selectedPoint == null ? "Selected point is null" : "Point selected");
+                System.out.println(isDragged ? "Point is being dragged" : "No drag");
             }
 
             selectedPoint = null;
             isDragged = false;
+            System.out.println("Stopped drag");
+            System.out.println("Draw curve");
+            DrawCurveUtils.drawPolynomialCurve(graphicsContext, points, canvas, POINT_RADIUS);
         }
-        DrawCurveUtils.drawPolynomialCurve(graphicsContext, points, canvas, POINT_RADIUS);
+
     }
 
 
