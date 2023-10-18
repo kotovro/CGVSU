@@ -54,7 +54,7 @@ public class LagrangePolynomialController {
         ParametrizedPoint selectedPair = selectedPair(clickPoint);
         points.remove(selectedPair);
         recalcDistances();
-        drawPolynomialCurve(graphicsContext);
+        DrawCurveUtils.drawPolynomialCurve(graphicsContext, points, canvas, POINT_RADIUS);
     }
 
     private void handleMiddleClick(GraphicsContext graphicsContext, MouseEvent event) {
@@ -82,21 +82,10 @@ public class LagrangePolynomialController {
             selectedPoint = null;
             isDragged = false;
         }
-        drawPolynomialCurve(graphicsContext);
+        DrawCurveUtils.drawPolynomialCurve(graphicsContext, points, canvas, POINT_RADIUS);
     }
 
-    private void drawPolynomialCurve(GraphicsContext graphicsContext) {
-        graphicsContext.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        for (ParametrizedPoint point : points) {
-            MutablePoint2D point2D = point.getValue();
-            graphicsContext.fillOval(
-                    point2D.getX() - POINT_RADIUS, point2D.getY() - POINT_RADIUS,
-                    2 * POINT_RADIUS, 2 * POINT_RADIUS);
-        }
-        if (points.size() > 1) {
-            drawLagrange(graphicsContext);
-        }
-    }
+
 
     private ParametrizedPoint getPointPair(MutablePoint2D clickPoint) {
         if (points.size() == 0) {
@@ -109,40 +98,6 @@ public class LagrangePolynomialController {
         }
     }
 
-    private void drawLagrange(GraphicsContext graphicsContext) {
-        double endT = points.get(points.size() -1).getKey();
-        double curT = points.get(0).getKey();
-        MutablePoint2D curPoint = points.get(0).getValue();
-        while (curT < endT) {
-            curT += 1;
-            if (curT > endT) {
-                curT = endT;
-            }
-            MutablePoint2D newPoint = solvePolynomial(curT);
-            graphicsContext.strokeLine(curPoint.getX(), curPoint.getY(), newPoint.getX(), newPoint.getY());
-            curPoint = newPoint;
-        }
-    }
-
-    private MutablePoint2D solvePolynomial(double t) {
-        int i = 0;
-        double resultX = 0;
-        double resultY = 0;
-        for (ParametrizedPoint pairI: points) {
-            double product = 1;
-            int j = 0;
-            for (ParametrizedPoint pairJ: points) {
-                if (i != j) {
-                    product *= (t - pairJ.getKey()) / (pairI.getKey() - pairJ.getKey());
-                }
-                j++;
-            }
-            resultX += product * pairI.getValue().getX();
-            resultY += product * pairI.getValue().getY();
-            i++;
-        }
-        return new MutablePoint2D(resultX, resultY);
-    }
     private ParametrizedPoint selectedPair(MutablePoint2D clickPoint) {
         for (ParametrizedPoint pair: points) {
             if (clickPoint.distance(pair.getValue()) <= POINT_RADIUS) {
