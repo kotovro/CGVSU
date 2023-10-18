@@ -66,6 +66,7 @@ public class LagrangePolynomialController {
         final MutablePoint2D clickPoint = new MutablePoint2D(event.getX(), event.getY());
         if (event.getEventType() == MouseEvent.MOUSE_PRESSED) {
             selectedPoint = selectedPair(clickPoint);
+
         }  else if (event.getEventType() == MouseEvent.MOUSE_DRAGGED){
             isDragged = true;
             if (selectedPoint != null) {
@@ -86,10 +87,10 @@ public class LagrangePolynomialController {
 
     private void drawPolynomialCurve(GraphicsContext graphicsContext) {
         graphicsContext.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        for (ParametrizedPoint pair : points) {
-            MutablePoint2D point = pair.getValue();
+        for (ParametrizedPoint point : points) {
+            MutablePoint2D point2D = point.getValue();
             graphicsContext.fillOval(
-                    point.getX() - POINT_RADIUS, point.getY() - POINT_RADIUS,
+                    point2D.getX() - POINT_RADIUS, point2D.getY() - POINT_RADIUS,
                     2 * POINT_RADIUS, 2 * POINT_RADIUS);
         }
         if (points.size() > 1) {
