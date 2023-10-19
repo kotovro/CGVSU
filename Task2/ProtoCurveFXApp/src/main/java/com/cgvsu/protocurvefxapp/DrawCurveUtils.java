@@ -144,14 +144,14 @@ public class DrawCurveUtils {
 
     public static void drawPolynomialCurve(GraphicsContext graphicsContext, ArrayList<ParametrizedPoint> points, Canvas canvas, int pointRadius) {
         graphicsContext.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        if (points.size() > 1) {
+            drawLagrange(graphicsContext, points);
+        }
         for (ParametrizedPoint point : points) {
             MutablePoint2D point2D = point.getValue();
             graphicsContext.fillOval(
                     point2D.getX() - pointRadius, point2D.getY() - pointRadius,
                     2 * pointRadius, 2 * pointRadius);
-        }
-        if (points.size() > 1) {
-            drawLagrange(graphicsContext, points);
         }
     }
     private static MutablePoint2D solvePolynomial(double t, ArrayList<ParametrizedPoint> points) {
