@@ -23,17 +23,40 @@ public class DrawCurveUtils {
                     2 * pointRadius, 2 * pointRadius);
         }
     }
+    private static int getGradientColor(double p1, double p2, int curVal, double shift) {
+        int res = (int) (Math.round((p1 - p2) * shift) + curVal);
+        if (res < 0) {
+            res = 0;
+        } else if (res > 255) {
+            res = 255;
+        }
+        return res;
+    }
+
     private static void drawLagrange(GraphicsContext graphicsContext, ArrayList<ParametrizedPoint> points) {
+        MutablePoint2D curPoint = points.get(0).getValue();
         double endT = points.get(points.size() -1).getKey();
         double curT = points.get(0).getKey();
-        MutablePoint2D curPoint = points.get(0).getValue();
+
+        double deltaRed = 200 / (endT - curT);
+        double deltaGreen = 255 / graphicsContext.getCanvas().getWidth();
+        double deltaBlue = 255 / graphicsContext.getCanvas().getHeight();
+
+        int curRed = 0;
+        int curGreen = (int) Math.floor(curPoint.getX() * deltaGreen);
+        int curBlue = (int) Math.floor(curPoint.getY() * deltaBlue);
+
         while (curT < endT) {
             curT += 1;
             if (curT > endT) {
                 curT = endT;
             }
             MutablePoint2D newPoint = solvePolynomial(curT, points);
-            RasterizationUtils.rasterizeLine(graphicsContext, curPoint.toPoint2D(), newPoint.toPoint2D(), Color.BLUE, RasterizationUtils.WU);
+            curRed = (int) (Math.round(curT * deltaRed));
+            curGreen = getGradientColor(newPoint.getX(), curPoint.getX(), curGreen, deltaGreen);
+            curBlue = getGradientColor(newPoint.getY(),  curPoint.getY(), curBlue,  deltaBlue);
+            Color curColor = Color.rgb(curRed, curGreen, curBlue);
+            RasterizationUtils.rasterizeLine(graphicsContext, curPoint.toPoint2D(), newPoint.toPoint2D(), curColor, RasterizationUtils.WU);
             curPoint = newPoint;
         }
     }
