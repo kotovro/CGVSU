@@ -8,13 +8,14 @@ import javafx.scene.paint.Color;
 import java.util.ArrayList;
 
 import static java.lang.Math.abs;
+import static java.lang.Math.tan;
 
 public class DrawCurveUtils {
 
     public static void drawPolynomialCurve(GraphicsContext graphicsContext, ArrayList<ParametrizedPoint> points, Canvas canvas, int pointRadius) {
         graphicsContext.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
         if (points.size() > 1) {
-            drawLagrange(graphicsContext, points);
+            drawLagrange(graphicsContext, points, true);
         }
         for (ParametrizedPoint point : points) {
             MutablePoint2D point2D = point.getValue();
@@ -23,28 +24,12 @@ public class DrawCurveUtils {
                     2 * pointRadius, 2 * pointRadius);
         }
     }
-    private static int getGradientColor(double p1, double p2, int curVal, double shift) {
-        int res = (int) (Math.round((p1 - p2) * shift) + curVal);
-        if (res < 0) {
-            res = 0;
-        } else if (res > 255) {
-            res = 255;
-        }
-        return res;
-    }
-
-    private static void drawLagrange(GraphicsContext graphicsContext, ArrayList<ParametrizedPoint> points) {
+    private static void drawLagrange(GraphicsContext graphicsContext, ArrayList<ParametrizedPoint> points, boolean isGradient) {
         MutablePoint2D curPoint = points.get(0).getValue();
         double endT = points.get(points.size() -1).getKey();
         double curT = points.get(0).getKey();
 
-        double deltaRed = 200 / (endT - curT);
-        double deltaGreen = 255 / graphicsContext.getCanvas().getWidth();
-        double deltaBlue = 255 / graphicsContext.getCanvas().getHeight();
-
-        int curRed = 0;
-        int curGreen = (int) Math.floor(curPoint.getX() * deltaGreen);
-        int curBlue = (int) Math.floor(curPoint.getY() * deltaBlue);
+        Color curColor = getColor(graphicsContext, Color.BLACK, curT, endT, new MutablePoint2D(0, 0), curPoint, isGradient);
 
         while (curT < endT) {
             curT += 1;
@@ -52,10 +37,7 @@ public class DrawCurveUtils {
                 curT = endT;
             }
             MutablePoint2D newPoint = solvePolynomial(curT, points);
-            curRed = (int) (Math.round(curT * deltaRed));
-            curGreen = getGradientColor(newPoint.getX(), curPoint.getX(), curGreen, deltaGreen);
-            curBlue = getGradientColor(newPoint.getY(),  curPoint.getY(), curBlue,  deltaBlue);
-            Color curColor = Color.rgb(curRed, curGreen, curBlue);
+            curColor = DrawCurveUtils.getColor(graphicsContext, curColor, curT, endT, curPoint, newPoint, isGradient);
             RasterizationUtils.rasterizeLine(graphicsContext, curPoint.toPoint2D(), newPoint.toPoint2D(), curColor, RasterizationUtils.WU);
             curPoint = newPoint;
         }
@@ -78,5 +60,36 @@ public class DrawCurveUtils {
             i++;
         }
         return new MutablePoint2D(resultX, resultY);
+    }
+
+    private static Color getColor(GraphicsContext graphicsContext,
+                                  Color curColor,
+                                  double curT,
+                                  double endT,
+                                  MutablePoint2D startPoint,
+                                  MutablePoint2D endPoint,
+                                  boolean isGradient) {
+        if (!isGradient) {
+            return curColor;
+        }
+
+        double deltaRed = 200 / endT;
+        double deltaGreen = 255 / graphicsContext.getCanvas().getWidth();
+        double deltaBlue = 255 / graphicsContext.getCanvas().getHeight();
+
+        int curRed = (int) (Math.round(curT * deltaRed));
+        int curGreen = getGradientColor(endPoint.getX(), startPoint.getX(), curColor.getGreen(), deltaGreen);
+        int curBlue = getGradientColor(endPoint.getY(),  startPoint.getY(), curColor.getBlue(),  deltaBlue);
+
+        return Color.rgb(curRed, curGreen, curBlue);
+    }
+    private static int getGradientColor(double p1, double p2, double curVal, double shift) {
+        int res = (int) (Math.round((p1 - p2) * shift) + curVal * 255);
+        if (res < 0) {
+            res = 0;
+        } else if (res > 255) {
+            res = 255;
+        }
+        return res;
     }
 }
