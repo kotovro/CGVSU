@@ -1,5 +1,7 @@
 package com.cgvsu.protocurvefxapp;
 
+import javafx.geometry.Point2D;
+
 public class MutablePoint2D {
     private double x;
     private double y;
@@ -36,6 +38,9 @@ public class MutablePoint2D {
         } else {
             return false;
         }
+    }
+    public Point2D toPoint2D() {
+        return new Point2D(this.x, this.y);
     }
 
 }
