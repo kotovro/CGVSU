@@ -7,8 +7,6 @@ import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.tan;
 
 public class DrawCurveUtils {
 
